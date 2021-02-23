@@ -8,7 +8,6 @@ public class PlayerController : MonoBehaviour
     private Rigidbody2D rb;
     private Vector3 change;
 
-    
     // Start is called before the first frame update
     void Start()
     {
@@ -34,5 +33,10 @@ public class PlayerController : MonoBehaviour
     void MoveCharacter()
     {
         rb.MovePosition(transform.position + change.normalized * speed * Time.deltaTime);
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        Debug.Log("Colliding " + collision);
     }
 }

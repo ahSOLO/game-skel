@@ -16,16 +16,12 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (change != Vector3.zero)
-        {
-            MoveCharacter();
-        }        
+        MoveCharacter();      
     }
 
     // Update is called once per frame
     void Update()
     {
-        change = Vector3.zero;
         change.x = Input.GetAxisRaw("Horizontal");
         change.y = Input.GetAxisRaw("Vertical");
     }
@@ -33,10 +29,5 @@ public class PlayerController : MonoBehaviour
     void MoveCharacter()
     {
         rb.MovePosition(transform.position + change.normalized * speed * Time.deltaTime);
-    }
-
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        Debug.Log("Colliding " + collision);
     }
 }

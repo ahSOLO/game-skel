@@ -4,30 +4,69 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] private float speed;
-    private Rigidbody2D rb;
-    private Vector3 change;
+    // Movement
+    [SerializeField] private float speed = 5f;
+    private bool isFacingRight;
+    private bool isWalking;
 
+    // Components
+    private Rigidbody2D rb;
+    private Animator anim;
+    private GameObject cf;
+
+    // FSM
+    private enum State { idle, walking }
+    private State state = State.idle;
+    
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-    }
-
-    private void FixedUpdate()
-    {
-        MoveCharacter();      
+        anim = GetComponent<Animator>();
+        cf = GameObject.FindWithTag("CursorFollower");
+        Debug.Log(cf);
+        
+        isFacingRight = true;
+        isWalking = false;
     }
 
     // Update is called once per frame
     void Update()
     {
-        change.x = Input.GetAxisRaw("Horizontal");
-        change.y = Input.GetAxisRaw("Vertical");
+        if (isFacingRight)
+        {
+            transform.localScale = new Vector2(1, 1);
+        }
+        else
+        {
+            transform.localScale = new Vector2(-1, 1);
+        }
+
+        if (Input.GetButton("Fire1"))
+        {
+            Vector3 target = cf.transform.position;
+            StopAllCoroutines();
+            StartCoroutine(WalkToTarget(target));
+        }
     }
 
-    void MoveCharacter()
+    IEnumerator WalkToTarget (Vector3 target)
     {
-        rb.MovePosition(transform.position + change.normalized * speed * Time.deltaTime);
+        while (Vector3.Distance(transform.position, target) > 0.1f)
+        {
+            anim.SetBool("isWalking", true);
+            if (transform.position.x > target.x)
+            {
+                isFacingRight = false;
+            }
+            else
+            {
+                isFacingRight = true;
+            }
+            transform.position = Vector3.MoveTowards(transform.position, target, speed * Time.deltaTime);
+            yield return null;
+        }
+
+        anim.SetBool("isWalking", false);
     }
 }

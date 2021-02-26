@@ -1,72 +1,67 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class PlayerController : MonoBehaviour
 {
     // Movement
     [SerializeField] private GameObject cursorFollower;
     [SerializeField] private float speed = 5f;
-    private bool isFacingRight;
-    private bool isWalking;
+    [SerializeField] private float stoppingDistance = 1.5f;
+
+    // Scaling
+    private int xDirection = 1;
+    [SerializeField] private float horizonPos = 10f;
+    [SerializeField] private float closestSize = 1.5f;
 
     // Components
-    private Rigidbody2D rb;
     private Animator anim;
-    private GameObject cf;
+    private NavMeshAgent agent;
 
     // FSM
     private enum State { idle, walking }
     private State state = State.idle;
-    
+
     // Start is called before the first frame update
     void Start()
     {
-        rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
-        Debug.Log(cf);
-        
-        isFacingRight = true;
-        isWalking = false;
+        agent = GetComponent<NavMeshAgent>();
+
+        agent.updateRotation = false;
+        agent.updateUpAxis = false;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (isFacingRight)
-        {
-            transform.localScale = new Vector2(1, 1);
-        }
-        else
-        {
-            transform.localScale = new Vector2(-1, 1);
-        }
-
         if (Input.GetButton("Fire1"))
         {
-            Vector3 target = cursorFollower.transform.position;
-            StopAllCoroutines();
-            StartCoroutine(WalkToTarget(target));
+            //Vector3 target = cursorFollower.transform.position;
+            agent.destination = cursorFollower.transform.position;
         }
-    }
 
-    IEnumerator WalkToTarget (Vector3 target)
-    {
-        while (Vector3.Distance(transform.position, target) > 0.1f)
+        if (agent.velocity.sqrMagnitude > 0.1f)
         {
             anim.SetBool("isWalking", true);
-            if (transform.position.x > target.x)
+            if (transform.position.x < agent.destination.x)
             {
-                isFacingRight = false;
+                xDirection = 1;
             }
             else
             {
-                isFacingRight = true;
+                xDirection = -1;
             }
-            transform.position = Vector3.MoveTowards(transform.position, target, speed * Time.deltaTime);
-            yield return null;
+        }
+        else
+        {
+            anim.SetBool("isWalking", false);
         }
 
-        anim.SetBool("isWalking", false);
+        transform.localScale = new Vector2(xDirection * closestSize * (horizonPos - transform.position.y) / horizonPos, closestSize * (horizonPos - transform.position.y) / horizonPos);
+
+        agent.speed = speed * 2 * ((horizonPos - transform.position.y) * (horizonPos - transform.position.y)) / (horizonPos* horizonPos);
+        agent.stoppingDistance = stoppingDistance * (horizonPos - transform.position.y) / horizonPos;
     }
 }

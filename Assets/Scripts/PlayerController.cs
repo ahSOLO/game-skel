@@ -5,6 +5,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     // Movement
+    [SerializeField] private GameObject cursorFollower;
     [SerializeField] private float speed = 5f;
     private bool isFacingRight;
     private bool isWalking;
@@ -23,7 +24,6 @@ public class PlayerController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
-        cf = GameObject.FindWithTag("CursorFollower");
         Debug.Log(cf);
         
         isFacingRight = true;
@@ -44,7 +44,7 @@ public class PlayerController : MonoBehaviour
 
         if (Input.GetButton("Fire1"))
         {
-            Vector3 target = cf.transform.position;
+            Vector3 target = cursorFollower.transform.position;
             StopAllCoroutines();
             StartCoroutine(WalkToTarget(target));
         }
